@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react"
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -6,7 +6,6 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signOut,
-  type User as FirebaseUser,
 } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 import { api } from "@/lib/api"
@@ -19,11 +18,19 @@ export interface AuthUser {
   credits: number
 }
 
+interface RegisterData {
+  name: string
+  email: string
+  password: string
+  role: "supporter" | "creator"
+  photoURL?: string
+}
+
 interface AuthContextValue {
   user: AuthUser | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<AuthUser>
-  signUp: (email: string, password: string) => Promise<FirebaseUser>
+  register: (data: RegisterData) => Promise<AuthUser>
   signInWithGoogle: () => Promise<AuthUser>
   logout: () => Promise<void>
 }
@@ -43,18 +50,22 @@ async function fetchUserProfile(): Promise<AuthUser> {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
+  const initializing = useRef(true)
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        try {
-          await getBackendToken(firebaseUser.email!)
-          const profile = await fetchUserProfile()
-          setUser(profile)
-        } catch {
-          localStorage.removeItem("token")
-          setUser(null)
+        if (initializing.current) {
+          try {
+            await getBackendToken(firebaseUser.email!)
+            const profile = await fetchUserProfile()
+            setUser(profile)
+          } catch {
+            localStorage.removeItem("token")
+            setUser(null)
+          }
         }
+        initializing.current = false
       } else {
         localStorage.removeItem("token")
         setUser(null)
@@ -66,16 +77,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    const result = await signInWithEmailAndPassword(auth, email, password)
-    await getBackendToken(result.user.email!)
+    await signInWithEmailAndPassword(auth, email, password)
+    await getBackendToken(email)
     const profile = await fetchUserProfile()
     setUser(profile)
     return profile
   }
 
-  const signUp = async (email: string, password: string) => {
-    const result = await createUserWithEmailAndPassword(auth, email, password)
-    return result.user
+  const register = async (data: RegisterData) => {
+    await createUserWithEmailAndPassword(auth, data.email, data.password)
+
+    const res = await api.post<{ token: string; user: AuthUser }>("/api/auth/register", data)
+
+    localStorage.setItem("token", res.token)
+    setUser(res.user)
+    return res.user
   }
 
   const signInWithGoogle = async () => {
@@ -99,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signInWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, loading, signIn, register, signInWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   )
