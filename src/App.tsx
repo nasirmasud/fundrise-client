@@ -12,6 +12,7 @@ import CreatorHomePage from "@/pages/creator-home-page"
 import CreatorContributionsPage from "@/pages/creator-contributions-page"
 import AddCampaignPage from "@/pages/add-campaign-page"
 import MyCampaignsPage from "@/pages/my-campaigns-page"
+import WithdrawalsPage from "@/pages/withdrawals-page"
 import NotFoundPage from "@/pages/not-found-page"
 
 export default function App() {
@@ -49,7 +50,7 @@ export default function App() {
               <Route path="review-contributions" element={<CreatorContributionsPage />} />
               <Route path="add-campaign" element={<AddCampaignPage />} />
               <Route path="my-campaigns" element={<MyCampaignsPage />} />
-              <Route path="withdrawals" element={<DashboardPage />} />
+              <Route path="withdrawals" element={<WithdrawalsPage />} />
               <Route path="creator-payment-history" element={<DashboardPage />} />
             </Route>
 
