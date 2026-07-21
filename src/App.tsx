@@ -8,6 +8,7 @@ import LoginPage from "@/pages/login-page"
 import RegisterPage from "@/pages/register-page"
 import ExplorePage from "@/pages/explore-page"
 import DashboardPage from "@/pages/dashboard-page"
+import CreatorHomePage from "@/pages/creator-home-page"
 import NotFoundPage from "@/pages/not-found-page"
 
 export default function App() {
@@ -41,7 +42,7 @@ export default function App() {
 
             {/* Creator routes */}
             <Route element={<ProtectedRoute allowedRoles={["creator"]} />}>
-              <Route path="creator-home" element={<DashboardPage />} />
+              <Route path="creator-home" element={<CreatorHomePage />} />
               <Route path="add-campaign" element={<DashboardPage />} />
               <Route path="my-campaigns" element={<DashboardPage />} />
               <Route path="withdrawals" element={<DashboardPage />} />
