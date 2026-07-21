@@ -17,6 +17,7 @@ const navConfig: Record<string, { label: string; href: string }[]> = {
   ],
   creator: [
     { label: "Home", href: "/dashboard" },
+    { label: "Review Contributions", href: "/dashboard/review-contributions" },
     { label: "Add Campaign", href: "/dashboard/add-campaign" },
     { label: "My Campaigns", href: "/dashboard/my-campaigns" },
     { label: "Withdrawals", href: "/dashboard/withdrawals" },
