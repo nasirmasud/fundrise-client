@@ -38,7 +38,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 async function getBackendToken(email: string) {
-  const { token } = await api.post<{ token: string }>("/api/jwt", { email })
+  const { token } = await api.post<{ token: string }>("/api/auth/jwt", { email })
   localStorage.setItem("token", token)
   return token
 }
