@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2 } from "lucide-react"
+import { Loader2, Upload, X } from "lucide-react"
 
 export default function RegisterPage() {
   const { register, signInWithGoogle } = useAuth()
@@ -16,7 +16,11 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("")
   const [role, setRole] = useState<"supporter" | "creator">("supporter")
   const [photoURL, setPhotoURL] = useState("")
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const isSubmitting = submitting || uploading
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -37,8 +41,23 @@ export default function RegisterPage() {
       return
     }
     setSubmitting(true)
+    let finalPhotoURL = photoURL
+
+    if (imageFile) {
+      setUploading(true)
+      try {
+        finalPhotoURL = await uploadToImgBB(imageFile)
+      } catch {
+        toast.error("Image upload failed")
+        setUploading(false)
+        setSubmitting(false)
+        return
+      }
+      setUploading(false)
+    }
+
     try {
-      await register({ name, email, password, role, photoURL: photoURL || undefined })
+      await register({ name, email, password, role, photoURL: finalPhotoURL || undefined })
       toast.success("Account created successfully")
       navigate("/dashboard")
     } catch (err) {
@@ -56,6 +75,35 @@ export default function RegisterPage() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Google sign-in failed")
     }
+  }
+
+  const uploadToImgBB = async (file: File): Promise<string> => {
+    const formData = new FormData()
+    formData.append("image", file)
+
+    const res = await fetch(
+      `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_API_KEY}`,
+      { method: "POST", body: formData }
+    )
+
+    const data = await res.json()
+    if (!data.success) throw new Error("Image upload failed")
+    return data.data.url
+  }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file")
+      return
+    }
+
+    setImageFile(file)
+    const reader = new FileReader()
+    reader.onload = () => setImagePreview(reader.result as string)
+    reader.readAsDataURL(file)
   }
 
   return (
@@ -101,16 +149,38 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="photoURL" className="text-sm font-medium">
-                Profile Picture URL <span className="text-text-muted dark:text-text-muted-dark">(optional)</span>
-              </label>
-              <Input
-                id="photoURL"
-                type="url"
-                placeholder="https://example.com/avatar.jpg"
-                value={photoURL}
-                onChange={(e) => setPhotoURL(e.target.value)}
-              />
+              <label className="text-sm font-medium">Profile Picture</label>
+              <div className="flex items-center gap-4">
+                {imagePreview ? (
+                  <div className="relative">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="h-16 w-16 rounded-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImageFile(null)
+                        setImagePreview(null)
+                      }}
+                      className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center text-xs"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="h-16 w-16 rounded-full bg-border-subtle dark:bg-border-subtle-dark flex items-center justify-center">
+                    <Upload className="h-6 w-6 text-text-muted dark:text-text-muted-dark" />
+                  </div>
+                )}
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-green file:text-white hover:file:bg-brand-green/90"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">I want to join as</label>
@@ -124,8 +194,8 @@ export default function RegisterPage() {
                 </SelectContent>
               </Select>
             </div>
-            <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create Account"}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create Account"}
             </Button>
           </form>
           <div className="relative my-4">
