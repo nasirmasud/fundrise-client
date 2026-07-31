@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { LogOut, Moon, Sun, Menu, X, User } from "lucide-react"
 import { useState } from "react"
 import toast from "react-hot-toast"
+import { NotificationBell } from "@/components/notification-bell"
 
 const navConfig: Record<string, { label: string; href: string }[]> = {
   supporter: [
@@ -87,6 +88,8 @@ export function DashboardLayout() {
             >
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
+
+            <NotificationBell />
 
             {user && (
               <div className="flex items-center gap-2">
