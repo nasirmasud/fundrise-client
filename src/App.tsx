@@ -7,6 +7,7 @@ import HomePage from "@/pages/home-page"
 import LoginPage from "@/pages/login-page"
 import RegisterPage from "@/pages/register-page"
 import ExplorePage from "@/pages/explore-page"
+import CampaignDetailPage from "@/pages/campaign-detail-page"
 import DashboardPage from "@/pages/dashboard-page"
 import CreatorHomePage from "@/pages/creator-home-page"
 import CreatorContributionsPage from "@/pages/creator-contributions-page"
@@ -15,6 +16,13 @@ import MyCampaignsPage from "@/pages/my-campaigns-page"
 import WithdrawalsPage from "@/pages/withdrawals-page"
 import CreatorPaymentHistoryPage from "@/pages/creator-payment-history-page"
 import NotFoundPage from "@/pages/not-found-page"
+import MyContributionsPage from "@/pages/my-contributions-page"
+import PurchaseCreditPage from "@/pages/purchase-credit-page"
+import PaymentHistoryPage from "@/pages/payment-history-page"
+import WithdrawalRequestsPage from "@/pages/withdrawal-requests-page"
+import ManageUsersPage from "@/pages/manage-users-page"
+import ManageCampaignsPage from "@/pages/manage-campaigns-page"
+import ReportsPage from "@/pages/reports-page"
 
 export default function App() {
   return (
@@ -24,7 +32,7 @@ export default function App() {
         <Route element={<MainLayout />}>
           <Route index element={<HomePage />} />
           <Route path="explore" element={<ExplorePage />} />
-          <Route path="campaign/:id" element={<ExplorePage />} />
+          <Route path="campaign/:id" element={<CampaignDetailPage />} />
           <Route element={<PublicOnlyRoute />}>
             <Route path="login" element={<LoginPage />} />
             <Route path="register" element={<RegisterPage />} />
@@ -36,13 +44,13 @@ export default function App() {
           <Route path="dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardPage />} />
 
-            {/* Supporter routes */}
+{/* Supporter routes */}
             <Route element={<ProtectedRoute allowedRoles={["supporter"]} />}>
               <Route path="supporter-home" element={<DashboardPage />} />
               <Route path="explore-campaigns" element={<ExplorePage />} />
-              <Route path="my-contributions" element={<DashboardPage />} />
-              <Route path="purchase-credit" element={<DashboardPage />} />
-              <Route path="payment-history" element={<DashboardPage />} />
+              <Route path="my-contributions" element={<MyContributionsPage />} />
+              <Route path="purchase-credit" element={<PurchaseCreditPage />} />
+              <Route path="payment-history" element={<PaymentHistoryPage />} />
             </Route>
 
             {/* Creator routes */}
@@ -58,10 +66,10 @@ export default function App() {
             {/* Admin routes */}
             <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
               <Route path="admin-home" element={<DashboardPage />} />
-              <Route path="manage-users" element={<DashboardPage />} />
-              <Route path="manage-campaigns" element={<DashboardPage />} />
-              <Route path="withdrawal-requests" element={<DashboardPage />} />
-              <Route path="reports" element={<DashboardPage />} />
+              <Route path="manage-users" element={<ManageUsersPage />} />
+              <Route path="manage-campaigns" element={<ManageCampaignsPage />} />
+              <Route path="withdrawal-requests" element={<WithdrawalRequestsPage />} />
+              <Route path="reports" element={<ReportsPage />} />
             </Route>
           </Route>
         </Route>
